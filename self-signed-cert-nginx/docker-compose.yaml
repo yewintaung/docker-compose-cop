@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  apiserver:
+    image: hashicorp/http-echo
+    ports:
+      - "8080:5678"
+    command: ["-text='Hello from apiserver.yewint.com'"]
+    networks:
+      selfsigned-app-network:
+        ipv4_address: 172.30.0.5
+
+  webserver:
+    image: hashicorp/http-echo
+    ports:
+      - "8081:5678"
+    command: ["-text='Hello from webserver.yewint.com'"]
+    networks:
+      selfsigned-app-network:
+        ipv4_address: 172.30.0.6
+        
+  nginx:
+    container_name: nginx
+    restart: unless-stopped
+    image: nginx
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx/config/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/cert:/etc/ssl
+    networks:
+      selfsigned-app-network:
+        ipv4_address: 172.30.0.10
+
+networks:
+  selfsigned-app-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16
